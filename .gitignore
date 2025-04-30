@@ -3,3 +3,7 @@ src/utils/fred_secrets.py
 __pycache__/
 data/raw/lendingclub.csv
 data/raw/lendingclub.csv
+src/utils/fred_secrets.py
+.env
+data/raw/lendingclub.csv
+__pycache__/
