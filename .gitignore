@@ -1,0 +1,3 @@
+src/utils/fred_secrets.py
+.env
+__pycache__/
