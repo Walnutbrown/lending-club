@@ -23,16 +23,6 @@ def _attach_cf_irr_and_sharpe(df, threshold):
         axis=1
     )
     df['irr'] = df['irr'].fillna(df['risk_free_rate'])
-    
-    # 🔍 디버깅: Sharpe 계산 전 IRR, risk-free, excess 통계 확인
-    excess = df['irr'] - df['risk_free_rate']
-    print("📊 [DEBUG] IRR 평균:", np.nanmean(df['irr']))
-    print("📊 [DEBUG] IRR 표준편차:", np.nanstd(df['irr'], ddof=1))
-    print("📊 [DEBUG] risk-free 평균:", np.nanmean(df['risk_free_rate']))
-    print("📊 [DEBUG] excess 평균:", np.nanmean(excess))
-    print("📊 [DEBUG] excess 표준편차:", np.nanstd(excess, ddof=1))
-    print("📊 [DEBUG] IRR = risk-free 비율:", (df['irr'] == df['risk_free_rate']).mean())
-    
     return calculate_sharpe(df['irr'].values, df['risk_free_rate'].values)
 
 from utils.make_cashflow import create_cash_flow
