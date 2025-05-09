@@ -27,6 +27,7 @@ def calculate_sharpe_from_df(df):
     df['cash_flow'] = df.apply(create_cash_flow, axis=1)
     df['irr'] = df['cash_flow'].apply(calculate_irr)
     sharpe_ratio = calculate_sharpe(df['irr'], df['risk_free_rate'])
+<<<<<<< HEAD
     return sharpe_ratio
 
 irr_cache = {}
@@ -51,3 +52,6 @@ def compute_sharpe_for_threshold(df, threshold):
     mask = df['pred_prob'] <= threshold
     selected = df.loc[mask]
     return calculate_sharpe(selected['irr'].values, selected['risk_free_rate'].values)
+=======
+    return sharpe_ratio
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124

@@ -27,6 +27,7 @@ def create_cash_flow(row):
         else:
                 cash_flow.append(installment)
 
+<<<<<<< HEAD
     return cash_flow
 
 
@@ -56,3 +57,6 @@ def get_cash_flow(row):
     return cash_flow_cache[key]
 
 
+=======
+    return cash_flow
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124

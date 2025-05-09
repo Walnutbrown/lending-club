@@ -3,7 +3,11 @@ import pandas as pd
 
 def main():
     # 1) interim 데이터 불러오기
+<<<<<<< HEAD
     df = pd.read_csv('data/interim/lendingclub_clean.csv')
+=======
+    df = pd.read_csv('../../data/interim/lendingclub_clean.csv')
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
 
     # 2) 숫자형으로 변환해야 하는 컬럼 먼저 처리
     df['term'] = df['term'].str.extract(r'(\d+)').astype(float)
@@ -90,7 +94,11 @@ def main():
 
     # 5) 저장
     Path('data/processed/').mkdir(parents=True, exist_ok=True)
+<<<<<<< HEAD
     df.to_csv('data/processed/lendingclub_features_for_lightgbm.csv', index=False)
+=======
+    df.to_csv('../../data/processed/lendingclub_features_for_lightgbm.csv', index=False)
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     print('✅ 파일 저장 완료')
     
 if __name__ == "__main__":

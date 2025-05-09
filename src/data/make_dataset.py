@@ -1,11 +1,18 @@
 from pathlib import Path
 import pandas as pd
+<<<<<<< HEAD
 import os
 print(os.getcwd())
 
 def main():
     # 1) 파일 읽기
     df = pd.read_csv('data/raw/lendingclub.csv', low_memory = False) 
+=======
+
+def main():
+    # 1) 파일 읽기
+    df = pd.read_csv('../../data/raw/lendingclub.csv', low_memory = False) 
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     print(df.head(3))
     
     def process_emp_length(x):
@@ -39,7 +46,11 @@ def main():
     print(f"전처리 후 데이터 크기: {df.shape}")
 
     # 3) interim 폴더에 저장
+<<<<<<< HEAD
     out_path = Path('data/interim/lendingclub_clean.csv')
+=======
+    out_path = Path('../../data/interim/lendingclub_clean.csv')
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     out_path.parent.mkdir(parents = True, exist_ok = True)
     df.to_csv(out_path, index = False)
     print(f"저장 완료: {out_path}")

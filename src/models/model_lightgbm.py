@@ -1,9 +1,12 @@
 import sys
 import os
 import lightgbm as lgb
+<<<<<<< HEAD
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+=======
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_dir = os.path.abspath(os.path.join(current_dir, '..', '..'))  # lendingclub_2nd
@@ -26,8 +29,11 @@ def _attach_cf_irr_and_sharpe(df, threshold):
         axis=1
     )
     df['irr'] = df['irr'].fillna(df['risk_free_rate'])
+<<<<<<< HEAD
     excess = df['irr'] - df['risk_free_rate']
     
+=======
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     return calculate_sharpe(df['irr'].values, df['risk_free_rate'].values)
 
 from utils.make_cashflow import create_cash_flow
@@ -37,7 +43,11 @@ from utils.calculate_sharpe import calculate_irr, calculate_sharpe
 
 def main():
     # 1. 데이터 로딩
+<<<<<<< HEAD
     df = pd.read_csv('data/processed/lendingclub_features_for_lightgbm.csv')
+=======
+    df = pd.read_csv('../../data/processed/lendingclub_features_for_lightgbm.csv')
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     print(f"🔍 원본 데이터 크기: {df.shape}")
 
     # 날짜 형식 변환
@@ -49,7 +59,11 @@ def main():
     df = apply_risk_free_rate(df, rate_3y, rate_5y)
 
     # 3. 전처리 및 변수 호출
+<<<<<<< HEAD
     features = pd.read_csv('data/processed/features_final_list_lightgbm.csv')
+=======
+    features = pd.read_csv('../../data/processed/features_final_list_lightgbm.csv')
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     features = features['feature'].squeeze().tolist()
     if 'default' in features:
         features.remove('default')
@@ -63,13 +77,17 @@ def main():
     # 4. 결과 저장용 리스트
     sharpe_ratios = []
     val_sharpe_ratios = []
+<<<<<<< HEAD
     sharpe_at_1 = []
 
     df_indicies = np.arange(len(df))
+=======
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
 
     # 5. 100번 반복
     for seed in range(100):
         # 5-1. 무작위 셔플
+<<<<<<< HEAD
         np.random.seed(seed)
         np.random.shuffle(df_indicies)
 
@@ -87,6 +105,18 @@ def main():
         print(f"🔍 Seed {seed}: train={len(train)}, val={len(val)}, test={len(test)}")
 
         # 5-2. LightGBM 모델 학습
+=======
+        df_temp = df.sample(frac=1, random_state=seed).reset_index(drop=True)
+
+        n = len(df_temp)
+        train_end = int(n * 0.6)
+        val_end = int(n * 0.8)
+
+        train = df_temp.iloc[:train_end]
+        val = df_temp.iloc[train_end:val_end]
+        test = df_temp.iloc[val_end:]
+        
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
         X_train = train[features]
         y_train = train['default']
         X_val = val[features]
@@ -115,10 +145,27 @@ def main():
         )
 
         val['pred_prob']  = model.predict(X_val)
+<<<<<<< HEAD
         test['pred_prob'] = model.predict(X_test)
 
         # ── ① threshold grid search on val ──
         threshold_grid = np.linspace(0.1, 0.9, 50)   
+=======
+        # 🔥 EDA check for potential issues before threshold search
+        print("==== EDA check ====")
+        print("loan_amnt NaN 비율:", val['loan_amnt'].isna().mean())
+        print("loan_amnt <= 0 비율:", (val['loan_amnt'] <= 0).mean())
+        print("term NaN 비율:", val['term'].isna().mean())
+        print("default NaN 비율:", val['default'].isna().mean())
+        print("last_pymnt_num NaN 비율:", val['last_pymnt_num'].isna().mean())
+        print("recoveries NaN 비율:", val['recoveries'].isna().mean())
+        print("collection_recovery_fee NaN 비율:", val['collection_recovery_fee'].isna().mean())
+        print("====================")
+        test['pred_prob'] = model.predict(X_test)
+
+        # ── ① threshold grid search on val ──
+        threshold_grid = np.linspace(0.05, 0.95, 200)   
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
         val_sharpes = []
         for th in threshold_grid:
             val_copy = val.copy()
@@ -131,8 +178,11 @@ def main():
                 print(f"   → excess 고유값들: {np.unique(excess)}")
                 print(f"   → excess 표준편차: {np.nanstd(excess, ddof=1)}")
             val_sharpes.append(s)
+<<<<<<< HEAD
         sharpe1 = _attach_cf_irr_and_sharpe(test,1)
         sharpe_at_1.append(sharpe1)
+=======
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
 
         best_idx        = int(np.nanargmax(val_sharpes))
         best_threshold  = threshold_grid[best_idx]
@@ -156,7 +206,10 @@ def main():
 
     plt.figure(figsize=(10, 6))
     plt.hist(sharpe_ratios, bins=30, edgecolor='black')
+<<<<<<< HEAD
     plt.axvline(np.mean(sharpe_at_1), color='red', linestyle='dashed', linewidth=1, label='Sharpe at threshold = 1')
+=======
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
     plt.title('Distribution of Sharpe Ratios (100 repetitions) — validation set')
     plt.xlabel('Sharpe Ratio')
     plt.ylabel('Frequency')
@@ -166,8 +219,16 @@ def main():
     # 7. 결과 저장
     result_df = pd.DataFrame({'Val Sharpe': val_sharpe_ratios,
                               'Test Sharpe': sharpe_ratios})
+<<<<<<< HEAD
     result_df.to_csv('reports/sharpe_distribution_lightgbm.csv', index=False)
     print("🎯 Sharpe ratio 분포 저장 완료!")
 
 if __name__ == "__main__":
     main()
+=======
+    result_df.to_csv('../../reports/sharpe_distribution_lightgbm.csv', index=False)
+    print("🎯 Sharpe ratio 분포 저장 완료!")
+
+if __name__ == "__main__":
+    main()
+>>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
