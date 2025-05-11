@@ -8,3 +8,5 @@ src/utils/fred_secrets.py
 data/raw/lendingclub.csv
 __pycache__/
 data/raw/lendingclub.csv
+*.csv
+*.png

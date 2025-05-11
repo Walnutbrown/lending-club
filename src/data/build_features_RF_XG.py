@@ -3,7 +3,7 @@ import pandas as pd
 
 def main():
     # 1) interim 데이터 불러오기
-    df = pd.read_csv('../../01_data/01-2_interim/lendingclub_clean.csv')
+    df = pd.read_csv('../../data/interim/lendingclub_clean.csv')
 
     # 2) 숫자형으로 변환해야 하는 컬럼 먼저 처리
 
@@ -103,8 +103,8 @@ def main():
         df[col] = le.fit_transform(df[col])
 
     # 5) 저장
-    Path('01_data/01-3_processed/').mkdir(parents=True, exist_ok=True)
-    df.to_csv('../../01_data/01-3_processed/lendingclub_features_for_tree.csv', index=False)
+    Path('../../data/processed/').mkdir(parents=True, exist_ok=True)
+    df.to_csv('../../data/processed/lendingclub_features_for_tree.csv', index=False)
     print('✅ 파일 저장 완료')
 
 if __name__ == "__main__":

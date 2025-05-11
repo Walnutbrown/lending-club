@@ -1,6 +1,6 @@
 import sys
 import os
-import lightgbm as lgb
+from xgboost import XGBClassifier
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_dir = os.path.abspath(os.path.join(current_dir, '..', '..'))  # lendingclub_2nd
@@ -36,7 +36,7 @@ from utils.calculate_sharpe import calculate_irr, calculate_sharpe
 
 def main():
     # 1. 데이터 로딩
-    df = pd.read_csv('../../data/processed/lendingclub_features_for_lightgbm.csv')
+    df = pd.read_csv('../../data/processed/lendingclub_features_for_tree.csv')
     print(f"🔍 원본 데이터 크기: {df.shape}")
 
     # Downsample to 20,000 rows
@@ -52,7 +52,7 @@ def main():
     df = apply_risk_free_rate(df, rate_3y, rate_5y)
 
     # 3. 전처리 및 변수 호출
-    features = pd.read_csv('../../data/processed/features_final_list_lightgbm.csv')
+    features = pd.read_csv('../../data/processed/features_final_list_rf_xg.csv')
     features = features['feature'].squeeze().tolist()
     if 'default' in features:
         features.remove('default')
@@ -81,28 +81,20 @@ def main():
     y_val = val['default']
 
     X_test = test[features]
-    
-    train_data = lgb.Dataset(X_train, label=y_train, categorical_feature=cat_features)
-    val_data = lgb.Dataset(X_val, label=y_val, categorical_feature=cat_features)
 
-    params = {
-        'objective': 'binary',
-        'metric': 'binary_logloss',
-        'boosting_type': 'gbdt',
-        'verbosity': -1,
-        'seed': seed,
-    }
-
-    from lightgbm import early_stopping
-
-    model = lgb.train(
-        params,
-        train_data,
-        valid_sets=[train_data, val_data],
-        callbacks=[early_stopping(stopping_rounds=30)]
+    model = XGBClassifier(
+        n_estimators=100,
+        max_depth=6,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        use_label_encoder=False,
+        eval_metric="logloss",
+        random_state=seed,
+        n_jobs=-1
     )
-
-    val['pred_prob']  = model.predict(X_val)
+    model.fit(X_train, y_train)
+    val['pred_prob'] = model.predict_proba(X_val)[:, 1]
     # 🔥 EDA check for potential issues before threshold search
     print("==== EDA check ====")
     print("loan_amnt NaN 비율:", val['loan_amnt'].isna().mean())
@@ -113,7 +105,7 @@ def main():
     print("recoveries NaN 비율:", val['recoveries'].isna().mean())
     print("collection_recovery_fee NaN 비율:", val['collection_recovery_fee'].isna().mean())
     print("====================")
-    test['pred_prob'] = model.predict(X_test)
+    test['pred_prob'] = model.predict_proba(X_test)[:, 1]
 
     # ── ① threshold grid search on val ──
     threshold_grid = np.linspace(0.05, 0.95, 200)   
