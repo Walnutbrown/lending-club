@@ -25,9 +25,11 @@ def _attach_cf_irr_and_sharpe(df, threshold):
     df['irr'] = df['irr'].fillna(df['risk_free_rate'])
     
     # 🔍 디버깅: Sharpe 계산 전 IRR, risk-free, excess 통계 확인
-    excess = df['irr'] - df['risk_free_rate']
-    
-    return calculate_sharpe(df['irr'].values, df['risk_free_rate'].values)
+    excess = df['irr'].values - df['risk_free_rate'].values
+    std = np.nanstd(excess, ddof=1)
+    if std == 0:
+        return 0.0
+    return np.nanmean(excess) / std
 
 from utils.make_cashflow import create_cash_flow
 from utils.fetch_risk_free_rate import load_risk_free_series, apply_risk_free_rate
@@ -39,9 +41,6 @@ def main():
     df = pd.read_csv('../../data/processed/lendingclub_features_for_lightgbm.csv')
     print(f"🔍 원본 데이터 크기: {df.shape}")
 
-    # Downsample to 20,000 rows
-    df = df.sample(n=20000, random_state=42).reset_index(drop=True)
-    print(f"🔍 다운샘플링 후 데이터 크기: {df.shape}")
 
     # 날짜 형식 변환
     df['issue_d'] = pd.to_datetime(df['issue_d'], errors = 'coerce')
@@ -74,6 +73,17 @@ def main():
     train = df_temp.iloc[:train_end]
     val = df_temp.iloc[train_end:val_end]
     test = df_temp.iloc[val_end:]
+
+    # Downsample only the training set
+    from sklearn.model_selection import train_test_split
+    _, train = train_test_split(
+        train,
+        train_size=20000,
+        stratify=train['default'],
+        random_state=42
+    )
+    train = train.reset_index(drop=True)
+    print(f"🔍 학습셋 다운샘플링 후 크기: {train.shape}")
     
     X_train = train[features]
     y_train = train['default']
@@ -103,17 +113,13 @@ def main():
     )
 
     val['pred_prob']  = model.predict(X_val)
-    # 🔥 EDA check for potential issues before threshold search
-    print("==== EDA check ====")
-    print("loan_amnt NaN 비율:", val['loan_amnt'].isna().mean())
-    print("loan_amnt <= 0 비율:", (val['loan_amnt'] <= 0).mean())
-    print("term NaN 비율:", val['term'].isna().mean())
-    print("default NaN 비율:", val['default'].isna().mean())
-    print("last_pymnt_num NaN 비율:", val['last_pymnt_num'].isna().mean())
-    print("recoveries NaN 비율:", val['recoveries'].isna().mean())
-    print("collection_recovery_fee NaN 비율:", val['collection_recovery_fee'].isna().mean())
-    print("====================")
-    test['pred_prob'] = model.predict(X_test)
+    # SHAP explainability using LightGBM's built-in SHAP calculation
+    import shap
+    shap_values = model.predict(X_val, pred_contrib=True)
+    shap_values_no_bias = shap_values[:, :-1]
+
+    # SHAP summary: 점 그래프 (beeswarm)
+    shap.summary_plot(shap_values_no_bias, X_val, plot_type="dot", max_display=10)
 
     # ── ① threshold grid search on val ──
     threshold_grid = np.linspace(0.05, 0.95, 200)   
@@ -134,6 +140,15 @@ def main():
     best_threshold  = threshold_grid[best_idx]
     best_val_sharpe = val_sharpes[best_idx]
     print(f"Seed {seed}: best threshold={best_threshold:.2f}  val‑Sharpe={best_val_sharpe:.4f}")
+
+    # 🔍 IRR과 Risk-Free 분석
+    val_copy = val.copy()
+    _ = _attach_cf_irr_and_sharpe(val_copy, best_threshold)
+
+    print("==== IRR & Risk-Free 분석 ====")
+    print("IRR 분포:", val_copy['irr'].describe())
+    print("Risk-Free 분포:", val_copy['risk_free_rate'].describe())
+    print("Excess Return 평균:", np.mean(val_copy['irr'] - val_copy['risk_free_rate']))
 
     plt.figure(figsize=(10, 6))
     plt.plot(threshold_grid, val_sharpes, label="Sharpe Ratio")

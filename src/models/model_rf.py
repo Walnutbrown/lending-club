@@ -104,6 +104,24 @@ def main():
     print("====================")
     test['pred_prob'] = model.predict_proba(X_test)[:, 1]
 
+    # SHAP 계산 및 선그래프 시각화
+    import shap
+    explainer = shap.Explainer(model, X_val)
+    shap_values = explainer(X_val)
+
+    mean_abs = np.abs(shap_values.values).mean(axis=0)
+    importances = pd.Series(mean_abs, index=X_val.columns)
+    top_features = importances.sort_values(ascending=False).head(10)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(top_features.index, top_features.values, marker='o', linestyle='-', color='teal')
+    plt.xticks(rotation=45)
+    plt.title("Top 10 Feature Importance (mean SHAP values)")
+    plt.ylabel("Mean Absolute SHAP Value")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
     # ── ① threshold grid search on val ──
     threshold_grid = np.linspace(0.05, 0.95, 200)   
     val_sharpes = []

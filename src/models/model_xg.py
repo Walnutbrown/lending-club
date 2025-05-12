@@ -107,6 +107,14 @@ def main():
     print("====================")
     test['pred_prob'] = model.predict_proba(X_test)[:, 1]
 
+    # ── SHAP 시각화 (Top 10 Features) ──
+    import shap
+    explainer = shap.Explainer(model, X_val)
+    shap_values = explainer(X_val)
+
+    # Top 10 features by mean(|SHAP|) 값으로 정렬
+    shap.summary_plot(shap_values, X_val, max_display=10, plot_type="bar")
+
     # ── ① threshold grid search on val ──
     threshold_grid = np.linspace(0.05, 0.95, 200)   
     val_sharpes = []

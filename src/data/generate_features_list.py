@@ -2,21 +2,22 @@ import pandas as pd
 
 def main():
     # 전처리된 feature 파일 불러오기
-    # df = pd.read_csv('../../data/processed/lendingclub_features_for_lightgbm.csv')
+    df = pd.read_csv('../../data/processed/lendingclub_features_for_lightgbm.csv')
     # df = pd.read_csv('../../data/processed/lendingclub_features_for_linear.csv')
-    df = pd.read_csv('../../data/processed/lendingclub_features_for_tree.csv')
+    # df = pd.read_csv('../../data/processed/lendingclub_features_for_tree.csv')
 
     # 제외할 컬럼 리스트
     exclude_cols = [
-        'cash_flow'
-        'collection_recovery_fee'
+        'cash_flow',
+        'collection_recovery_fee',
+        'collections_12_mths_ex_med',
         'default',
         'funded_amnt',
         'funded_amnt_inv',
         'grade',
         'id',
         'initial_list_status',
-        'installment'
+        'installment',
         'int_rate',
         'issue_d',
         'last_credit_pull_d',
@@ -24,6 +25,7 @@ def main():
         'last_fico_range_low',
         'last_pymnt_amnt',
         'last_pymnt_d',
+        'last_pymnt_num',
         'loan_amnt',
         'loan_status',
         'member_id',
@@ -73,9 +75,9 @@ def main():
 
     # 저장
     features_df = pd.DataFrame({'feature': feature_list})
-    features_df.to_csv('../../data/processed/features_final_list_rf_xg.csv', index=False)
+    features_df.to_csv('../../data/processed/features_final_list_lightgbm.csv', index=False)
 
-    print(f"✅ features_final_list_rf_xg.csv 생성 완료! ({len(feature_list)}개 변수)")
+    print(f"✅ features_final_list_lightgbm.csv 생성 완료! ({len(feature_list)}개 변수)")
 
 if __name__ == "__main__":
     main()
