@@ -36,6 +36,12 @@ notebooks/
 ├── 01_EDA.ipynb
 ├── 02_Feature_Engineering.ipynb
 └── 03_Model_Comparison.ipynb
+archive/lendingclub_1st/
+├── 01_initial_data_definition.ipynb
+├── 02_default_labeling.ipynb
+├── 03_baseline_model.ipynb
+├── 04_feature_selection.ipynb
+└── 05_information_set_review.ipynb
 src/
 ├── data/                          # dataset construction and feature lists
 ├── models/                        # LightGBM, Random Forest, XGBoost
@@ -46,9 +52,11 @@ data/raw/                          # local raw Lending Club data (not committed)
 data/processed/                   # local feature matrices (not committed)
 ```
 
+The `archive/lendingclub_1st/` folder is the earliest Lending Club study in this account's oldest repository, preserved here so the portfolio shows the full analytical progression rather than only the final pipeline.
+
 ## Reproduce
 
-1. Install the dependencies used in the scripts (`pandas`, `numpy`, `scikit-learn`, `lightgbm`, `xgboost`, `shap`, `matplotlib`, and `fredapi`/the configured risk-free-rate source).
+1. Install the dependencies with `pip install -r requirements.txt`.
 2. Obtain the Lending Club source data and place it under `data/raw/`.
 3. Run the feature-building scripts under `src/data/`.
 4. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
@@ -60,6 +68,7 @@ Raw and processed CSV files are intentionally excluded from GitHub: the raw file
 - The exploratory 60/20/20 random split can leak vintage information; replace it with an out-of-time split for a defensible credit estimate.
 - Threshold search needs explicit transaction/servicing costs, loss-given-default assumptions, and confidence intervals.
 - The repository would be stronger with a pinned environment file, non-empty end-to-end notebooks, and a tracked model-card style results table.
+- The curated notebooks now provide a readable `01 → 02 → 03` path; the underlying scripts remain the source of truth for execution.
 
 ## Portfolio signal
 
