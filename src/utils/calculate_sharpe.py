@@ -1,57 +1,66 @@
 import numpy as np
 import numpy_financial as npf
-import pandas as pd
-import fredapi as Fred
+
 from utils.make_cashflow import create_cash_flow
 
-# IRR 계산 함수
-def calculate_irr(cash_flow):
-    irr_monthly = npf.irr(cash_flow)
-    if irr_monthly is not None and not np.isnan(irr_monthly):
-        irr_annual = (1 + irr_monthly) ** 12 - 1
-    else:
-        irr_annual = np.nan
-    return irr_annual
 
-# Sharpe Ratio 계산 함수
-def calculate_sharpe(returns, risk_free):
-    returns     = np.asarray(returns, dtype=float) # 벡터
-    risk_free   = np.asarray(risk_free, dtype=float) # 벡터
-    mask = ~np.isnan(returns) & ~np.isnan(risk_free)
-    excess = returns[mask] - risk_free[mask] # nan이 없을 때
-    if excess.size == 0 or np.nanstd(returns, ddof = 1) == 0:
+def calculate_irr(cash_flow):
+    """Convert monthly IRR to an annualized IRR."""
+    try:
+        irr_monthly = npf.irr(cash_flow)
+    except (TypeError, ValueError):
         return np.nan
-    return np.nanmean(excess) / np.nanstd(excess, ddof = 1) 
+    if irr_monthly is not None and np.isfinite(irr_monthly):
+        return (1 + irr_monthly) ** 12 - 1
+    return np.nan
+
+
+def calculate_sharpe(returns, risk_free):
+    """Calculate the mean excess return divided by excess-return volatility."""
+    returns = np.asarray(returns, dtype=float)
+    risk_free = np.asarray(risk_free, dtype=float)
+    mask = np.isfinite(returns) & np.isfinite(risk_free)
+    excess = returns[mask] - risk_free[mask]
+    if excess.size < 2:
+        return np.nan
+    excess_std = np.nanstd(excess, ddof=1)
+    if not np.isfinite(excess_std) or excess_std == 0:
+        return np.nan
+    return np.nanmean(excess) / excess_std
+
 
 def calculate_sharpe_from_df(df):
-    df['cash_flow'] = df.apply(create_cash_flow, axis=1)
-    df['irr'] = df['cash_flow'].apply(calculate_irr)
-    sharpe_ratio = calculate_sharpe(df['irr'], df['risk_free_rate'])
-<<<<<<< HEAD
-    return sharpe_ratio
+    df = df.copy()
+    df["cash_flow"] = df.apply(create_cash_flow, axis=1)
+    df["irr"] = df["cash_flow"].apply(calculate_irr)
+    return calculate_sharpe(df["irr"], df["risk_free_rate"])
+
 
 irr_cache = {}
 
+
 def get_irr(cash_flow):
-    if not isinstance(cash_flow, list) or len(cash_flow) == 0:
+    """Cached IRR calculation for repeated investment-policy evaluations."""
+    if not isinstance(cash_flow, list) or not cash_flow:
         return np.nan
-    key = tuple(round(v, 6) for v in cash_flow)
+    key = tuple(round(float(value), 6) for value in cash_flow)
     if key not in irr_cache:
         irr_cache[key] = calculate_irr(cash_flow)
     return irr_cache[key]
 
+
 def precompute_cashflow_and_irr(df):
-    # cash_flow와 irr을 전체 데이터셋에 대해 미리 계산
+    """Precompute cash flows and IRR once before threshold search."""
     df = df.copy()
-    df['cash_flow'] = df.apply(create_cash_flow, axis=1)
-    df['irr'] = df['cash_flow'].apply(lambda cf: calculate_irr(cf) if isinstance(cf, list) else np.nan)
-    df['irr'] = df['irr'].fillna(df['risk_free_rate'])
+    df["cash_flow"] = df.apply(create_cash_flow, axis=1)
+    df["irr"] = df["cash_flow"].apply(get_irr)
+    df["irr"] = df["irr"].fillna(df["risk_free_rate"])
+    return df
+
 
 def compute_sharpe_for_threshold(df, threshold):
-    # pred_prob 기준으로 필터만 수행하여 Sharpe 계산
-    mask = df['pred_prob'] <= threshold
-    selected = df.loc[mask]
-    return calculate_sharpe(selected['irr'].values, selected['risk_free_rate'].values)
-=======
-    return sharpe_ratio
->>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
+    """Evaluate the risk-adjusted return of loans below a score threshold."""
+    selected = df.loc[df["pred_prob"] <= threshold]
+    if selected.empty:
+        return np.nan
+    return calculate_sharpe(selected["irr"].to_numpy(), selected["risk_free_rate"].to_numpy())

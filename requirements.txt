@@ -1,0 +1,13 @@
+jupyter
+numpy
+numpy-financial
+pandas
+scikit-learn
+scipy
+matplotlib
+seaborn
+lightgbm
+xgboost
+shap
+fredapi
+openpyxl

@@ -1,59 +1,45 @@
 from pathlib import Path
+
 import pandas as pd
-<<<<<<< HEAD
-import os
-print(os.getcwd())
+
+
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+
 
 def main():
-    # 1) 파일 읽기
-    df = pd.read_csv('data/raw/lendingclub.csv', low_memory = False) 
-=======
-
-def main():
-    # 1) 파일 읽기
-    df = pd.read_csv('../../data/raw/lendingclub.csv', low_memory = False) 
->>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
+    """Create the cleaned Lending Club dataset from the raw export."""
+    input_path = PROJECT_DIR / "data" / "raw" / "lendingclub.csv"
+    df = pd.read_csv(input_path, low_memory=False)
     print(df.head(3))
-    
-    def process_emp_length(x):
-        if pd.isna(x):
+
+    def process_emp_length(value):
+        if pd.isna(value):
             return None
-        elif '< 1' in x:
+        value = str(value)
+        if "< 1" in value:
             return 0.5
-        elif '10+' in x:
+        if "10+" in value:
             return 10.0
-        else:
-            extracted = pd.to_numeric(pd.Series(x).str.extract(r'(\d+)')[0], errors='coerce')
-            return extracted.iloc[0]
+        extracted = pd.to_numeric(
+            pd.Series(value).str.extract(r"(\d+)")[0], errors="coerce"
+        )
+        return extracted.iloc[0]
 
-    df['emp_length'] = df['emp_length'].apply(process_emp_length)
+    df["emp_length"] = df["emp_length"].apply(process_emp_length)
 
-    # loan_status를 default로 변환
-    # 'Fully Paid', 'Charged Off', 'Default'만 남기기
-    df = df[df['loan_status'].isin(['Fully Paid', 'Charged Off', 'Default'])]
-
-    # default 컬럼 매핑
-    status_mapping = {
-        'Fully Paid': 0,
-        'Charged Off': 1,
-        'Default': 1
-    }
-    df['default'] = df['loan_status'].map(status_mapping)
-    df = df.drop(columns = ['loan_status'])
-
-    # default가 NaN인 경우는 데이터셋에서 제외
-    df = df[~df['default'].isnull()]
+    # Keep only observations with an unambiguous repayment outcome.
+    df = df[df["loan_status"].isin(["Fully Paid", "Charged Off", "Default"])].copy()
+    status_mapping = {"Fully Paid": 0, "Charged Off": 1, "Default": 1}
+    df["default"] = df["loan_status"].map(status_mapping)
+    df = df.drop(columns=["loan_status"])
+    df = df[df["default"].notna()]
     print(f"전처리 후 데이터 크기: {df.shape}")
 
-    # 3) interim 폴더에 저장
-<<<<<<< HEAD
-    out_path = Path('data/interim/lendingclub_clean.csv')
-=======
-    out_path = Path('../../data/interim/lendingclub_clean.csv')
->>>>>>> fdc21f29decd5b56c3acce4eecb3fe029be56124
-    out_path.parent.mkdir(parents = True, exist_ok = True)
-    df.to_csv(out_path, index = False)
-    print(f"저장 완료: {out_path}")
+    output_path = PROJECT_DIR / "data" / "interim" / "lendingclub_clean.csv"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
+    print(f"저장 완료: {output_path}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
