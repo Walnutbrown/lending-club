@@ -66,6 +66,12 @@ The `archive/lendingclub_1st/` folder is the earliest Lending Club study in this
    - `python src/data/generate_features_list.py --model linear`
 6. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
 
+To run the lightweight regression checks for the model-specific feature-list generator:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 Raw and processed CSV files are intentionally excluded from GitHub: the raw file is large and the repository should not redistribute the source dataset. The `.gitignore` also excludes local secrets and Python cache files.
 
 ## Limitations and next steps
