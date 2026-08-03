@@ -1,12 +1,13 @@
+# Secrets and local configuration
 src/utils/fred_secrets.py
 .env
+
+# Local data and generated artifacts
+data/raw/lendingclub.csv
+data/processed/*.csv
+reports/figures/*.png
+
+# Python / macOS metadata
 __pycache__/
-data/raw/lendingclub.csv
-data/raw/lendingclub.csv
-src/utils/fred_secrets.py
-.env
-data/raw/lendingclub.csv
-__pycache__/
-data/raw/lendingclub.csv
-*.csv
-*.png
+.ipynb_checkpoints/
+.DS_Store
