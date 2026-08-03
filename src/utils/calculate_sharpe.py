@@ -1,5 +1,9 @@
 import numpy as np
-import numpy_financial as npf
+
+try:
+    import numpy_financial as npf
+except ImportError:  # Keep utility importable until the optional dependency is installed.
+    npf = None
 
 from utils.make_cashflow import create_cash_flow
 
@@ -7,8 +11,21 @@ from utils.make_cashflow import create_cash_flow
 def calculate_irr(cash_flow):
     """Convert monthly IRR to an annualized IRR."""
     try:
-        irr_monthly = npf.irr(cash_flow)
-    except (TypeError, ValueError):
+        if npf is not None:
+            irr_monthly = npf.irr(cash_flow)
+        else:
+            from scipy.optimize import brentq
+
+            values = np.asarray(cash_flow, dtype=float)
+            if values.size < 2 or not (np.any(values < 0) and np.any(values > 0)):
+                return np.nan
+
+            def npv(rate):
+                periods = np.arange(values.size)
+                return np.sum(values / (1 + rate) ** periods)
+
+            irr_monthly = brentq(npv, -0.999999, 10.0)
+    except (TypeError, ValueError, OverflowError):
         return np.nan
     if irr_monthly is not None and np.isfinite(irr_monthly):
         return (1 + irr_monthly) ** 12 - 1

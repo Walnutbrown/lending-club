@@ -1,10 +1,24 @@
-from fredapi import Fred
-from utils.fred_secrets import load_fred_api_key
+import os
+
 import pandas as pd
 import numpy as np
+from fredapi import Fred
 
 def connect_fred_api():
-    api_key = load_fred_api_key()
+    """Create a FRED client without requiring a tracked local secret file."""
+    api_key = os.getenv("FRED_API_KEY")
+    if not api_key:
+        # Backward-compatible local fallback; this module is intentionally ignored.
+        try:
+            from utils.fred_secrets import load_fred_api_key
+            api_key = load_fred_api_key()
+        except ImportError as exc:
+            raise RuntimeError(
+                "Set FRED_API_KEY before running the risk-adjusted return models. "
+                "See .env.example."
+            ) from exc
+    if not api_key:
+        raise RuntimeError("FRED_API_KEY is empty. See .env.example.")
     fred = Fred(api_key=api_key)
     return fred
 
