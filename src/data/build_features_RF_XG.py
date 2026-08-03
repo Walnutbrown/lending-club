@@ -1,9 +1,14 @@
 from pathlib import Path
 import pandas as pd
 
+
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+
+
 def main():
     # 1) interim 데이터 불러오기
-    df = pd.read_csv('../../data/interim/lendingclub_clean.csv')
+    input_path = PROJECT_DIR / "data" / "interim" / "lendingclub_clean.csv"
+    df = pd.read_csv(input_path)
 
     # 2) 숫자형으로 변환해야 하는 컬럼 먼저 처리
 
@@ -103,8 +108,9 @@ def main():
         df[col] = le.fit_transform(df[col])
 
     # 5) 저장
-    Path('../../data/processed/').mkdir(parents=True, exist_ok=True)
-    df.to_csv('../../data/processed/lendingclub_features_for_tree.csv', index=False)
+    output_path = PROJECT_DIR / "data" / "processed" / "lendingclub_features_for_tree.csv"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
     print('✅ 파일 저장 완료')
 
 if __name__ == "__main__":

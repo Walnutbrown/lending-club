@@ -36,7 +36,7 @@ from utils.calculate_sharpe import calculate_irr, calculate_sharpe
 
 def main():
     # 1. 데이터 로딩
-    df = pd.read_csv('../../data/processed/lendingclub_features_for_tree.csv')
+    df = pd.read_csv(os.path.join(project_dir, 'data', 'processed', 'lendingclub_features_for_tree.csv'))
     print(f"🔍 원본 데이터 크기: {df.shape}")
 
     # Downsample to 20,000 rows
@@ -52,7 +52,7 @@ def main():
     df = apply_risk_free_rate(df, rate_3y, rate_5y)
 
     # 3. 전처리 및 변수 호출
-    features = pd.read_csv('../../data/processed/features_final_list_rf_xg.csv')
+    features = pd.read_csv(os.path.join(project_dir, 'data', 'processed', 'features_final_list_rf_xg.csv'))
     features = features['feature'].squeeze().tolist()
     if 'default' in features:
         features.remove('default')

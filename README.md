@@ -58,8 +58,9 @@ The `archive/lendingclub_1st/` folder is the earliest Lending Club study in this
 
 1. Install the dependencies with `pip install -r requirements.txt`.
 2. Obtain the Lending Club source data and place it under `data/raw/`.
-3. Run the feature-building scripts under `src/data/`.
-4. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
+3. For the risk-adjusted return models, export `FRED_API_KEY` (see `.env.example`).
+4. Run the feature-building scripts under `src/data/`.
+5. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
 
 Raw and processed CSV files are intentionally excluded from GitHub: the raw file is large and the repository should not redistribute the source dataset. The `.gitignore` also excludes local secrets and Python cache files.
 
