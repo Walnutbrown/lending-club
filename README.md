@@ -60,7 +60,11 @@ The `archive/lendingclub_1st/` folder is the earliest Lending Club study in this
 2. Obtain the Lending Club source data and place it under `data/raw/`.
 3. For the risk-adjusted return models, export `FRED_API_KEY` (see `.env.example`).
 4. Run the feature-building scripts under `src/data/`.
-5. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
+5. Generate the feature list for the selected preprocessing family; the default is LightGBM:
+   - `python src/data/generate_features_list.py --model lightgbm`
+   - `python src/data/generate_features_list.py --model tree`
+   - `python src/data/generate_features_list.py --model linear`
+6. Run the model scripts under `src/models/`, then inspect the generated threshold and SHAP plots.
 
 Raw and processed CSV files are intentionally excluded from GitHub: the raw file is large and the repository should not redistribute the source dataset. The `.gitignore` also excludes local secrets and Python cache files.
 
@@ -70,6 +74,7 @@ Raw and processed CSV files are intentionally excluded from GitHub: the raw file
 - Threshold search needs explicit transaction/servicing costs, loss-given-default assumptions, and confidence intervals.
 - The repository would be stronger with a pinned environment file, non-empty end-to-end notebooks, and a tracked model-card style results table.
 - The curated notebooks now provide a readable `01 → 02 → 03` path; the underlying scripts remain the source of truth for execution.
+- `generate_features_list.py` uses an explicit `--model` argument, so switching between LightGBM, linear, and tree features no longer requires commenting and uncommenting source lines.
 
 ## Portfolio signal
 
